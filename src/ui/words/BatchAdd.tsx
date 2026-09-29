@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { addBatch, parseBatch } from '../../data/repo'
 import { BackLink, useData } from '../common'
 import { PlayerPicker } from './PlayerPicker'
+import { play } from '../audio'
 import { IconCheck } from '../icons'
 import { CATEGORIES } from './WordEditor'
 
@@ -20,6 +21,7 @@ export function BatchAdd() {
 
   async function save() {
     const n = await addBatch(lines, { category, forPlayerIds: forPlayerIds.length ? forPlayerIds : undefined })
+    play('ajout')
     setDone(n)
     setText('')
   }

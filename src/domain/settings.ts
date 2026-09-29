@@ -5,7 +5,10 @@ export interface Settings {
   maxCards: number
   /** Mots nouveaux par partie (3 à 5). */
   maxNew: number
+  /** Effets sonores. */
   sound: boolean
+  /** Musique de fond. */
+  music: boolean
   /** Code de l'Espace parents ; vide = pas de code. */
   parentPin: string
   scores: ScoreTable
@@ -15,6 +18,7 @@ export const DEFAULT_SETTINGS: Settings = {
   maxCards: 15,
   maxNew: 4,
   sound: false,
+  music: false,
   parentPin: '',
   scores: DEFAULT_SCORES,
 }

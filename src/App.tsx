@@ -9,6 +9,7 @@ import { SettingsPanel } from './ui/parents/SettingsPanel'
 import { Progress } from './ui/stats/Progress'
 import { Ranking } from './ui/stats/Ranking'
 import { UpdatePrompt } from './ui/UpdatePrompt'
+import { AudioSync } from './ui/useTrack'
 import { BatchAdd } from './ui/words/BatchAdd'
 import { WordEditor } from './ui/words/WordEditor'
 import { WordList } from './ui/words/WordList'
@@ -18,6 +19,7 @@ export default function App() {
   return (
     <HashRouter>
       <UpdatePrompt />
+      <AudioSync />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/partie" element={<GameScreen />} />

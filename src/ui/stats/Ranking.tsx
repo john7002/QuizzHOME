@@ -1,5 +1,6 @@
 // Trophées & classement familial.
 
+import { useTrack } from '../useTrack'
 import { useState } from 'react'
 import { toDay } from '../../domain/days'
 import { dashboard, MILESTONES, standings, streak, type Period } from '../../domain/stats'
@@ -17,6 +18,7 @@ export function Ranking() {
   const data = useData()
   const [period, setPeriod] = useState<Period>('semaine')
   const [showRules, setShowRules] = useState(false)
+  useTrack('menu')
   if (!data) return <Loading />
 
   const today = toDay()

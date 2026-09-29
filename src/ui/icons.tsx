@@ -155,3 +155,12 @@ export const Crown = ({ size = 30 }: P) => (
     <path d="M2 5l5 4 5-7 5 7 5-4-2 12H4z" fill="#FFC53D" stroke="#120F2A" strokeWidth="1.3" strokeLinejoin="round" />
   </svg>
 )
+
+export const IconMusic = ({ size = 26, off = false }: P & { off?: boolean }) => (
+  <svg {...stroke(size, 2)}>
+    <path d="M9 18V5l11-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="17" cy="16" r="3" />
+    {off && <path d="M3 3l18 18" />}
+  </svg>
+)

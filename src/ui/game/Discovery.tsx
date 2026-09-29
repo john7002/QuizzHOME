@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Word } from '../../domain/types'
 import { Sentence, useImageUrl } from '../common'
+import { play } from '../audio'
 import { IconArrow, IconBack, IconPause, IconStar } from '../icons'
 
 export function Discovery({ words, onDone }: { words: Word[]; onDone: () => void }) {
@@ -64,7 +65,13 @@ export function Discovery({ words, onDone }: { words: Word[]; onDone: () => void
         <button className="btn" onClick={() => setI(i - 1)} disabled={i === 0}>
           <IconBack /> Précédent
         </button>
-        <button className="btn btn-primary disp" style={{ minHeight: 84, fontSize: 24, padding: '0 36px', borderRadius: 26 }} onClick={() => (last ? onDone() : setI(i + 1))}>
+        <button className="btn btn-primary disp" style={{ minHeight: 84, fontSize: 24, padding: '0 36px', borderRadius: 26 }} onClick={() => {
+            if (last) onDone()
+            else {
+              play('decouverte')
+              setI(i + 1)
+            }
+          }}>
           {last ? 'Commencer la partie' : 'Mot suivant'} <IconArrow size={26} />
         </button>
       </div>

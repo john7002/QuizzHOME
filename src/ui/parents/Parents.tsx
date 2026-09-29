@@ -1,5 +1,6 @@
 // Espace parents : mots, joueurs, paquets de départ, réglages, sauvegarde.
 
+import { useTrack } from '../useTrack'
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -24,6 +25,7 @@ const TABS = [
 export function Parents() {
   const settings = useLiveQuery(getSettings)
   const [, rerender] = useState(0)
+  useTrack('aucune')
 
   // Rien n'est affiché avant de savoir si un code protège l'Espace parents.
   if (!settings) return null

@@ -60,6 +60,24 @@ export function SettingsPanel() {
           Pas de mot nouveau quand 15 mots ou plus sont à réviser : on consolide d’abord.
         </p>
 
+        <h2 style={{ marginTop: 12 }}>Son</h2>
+        {(
+          [
+            ['sound', 'Effets sonores', 'boutons, bonnes réponses, mots qui montent, fin de partie'],
+            ['music', 'Musique de fond', 'calme dans les menus, plus rythmée pendant la partie'],
+          ] as const
+        ).map(([key, label, hint]) => (
+          <label key={key} className="row" style={{ gap: 14, cursor: 'pointer' }}>
+            <input type="checkbox" checked={settings[key]} onChange={(e) => saveSettings({ [key]: e.target.checked })} style={{ width: 28, height: 28, accentColor: 'var(--lime)' }} />
+            <span style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: 18, fontWeight: 600 }}>{label}</span>
+              <span className="muted" style={{ fontSize: 14 }}>
+                {hint}
+              </span>
+            </span>
+          </label>
+        ))}
+
         <h2 style={{ marginTop: 12 }}>Code parents</h2>
         <p className="muted" style={{ fontSize: 15 }}>
           {settings.parentPin ? 'Un code protège l’Espace parents.' : 'Aucun code : tout le monde peut ouvrir l’Espace parents.'}

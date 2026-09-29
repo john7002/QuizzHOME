@@ -6,6 +6,7 @@ import { saveCurrentGame } from '../../data/repo'
 import { cardCount, pointsByPlayer, type Game } from '../../domain/game'
 import { ACQUIS, type Player } from '../../domain/types'
 import { Avatar, type AppData } from '../common'
+import { play } from '../audio'
 import { Crown, IconStar, IconTrend, Trophy } from '../icons'
 
 const CONFETTI = ['#C8F55A', '#FFC53D', '#5AD8FF', '#FF7A59', '#9B7BFF']
@@ -19,6 +20,7 @@ export function EndScreen({ game, data, onReplay }: { game: Game; data: AppData;
   useEffect(() => {
     // La partie est entièrement enregistrée : on la retire de « partie en cours ».
     void saveCurrentGame(undefined)
+    play('fin')
   }, [])
 
   const scores = pointsByPlayer(game)

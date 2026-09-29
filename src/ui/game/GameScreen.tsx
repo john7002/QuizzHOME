@@ -8,7 +8,8 @@ import { pointsFor } from '../../domain/scoring'
 import type { Result } from '../../domain/types'
 import { Avatar, Loading, useData } from '../common'
 import { IconCheck, IconPause, IconRetry, IconStar, IconWave } from '../icons'
-import { playSound } from '../sound'
+import { play } from '../audio'
+import { useTrack } from '../useTrack'
 import { CardView } from './CardView'
 import { Discovery } from './Discovery'
 import { EndScreen } from './EndScreen'
@@ -29,6 +30,7 @@ export function GameScreen() {
   const [revealed, setRevealed] = useState(false)
   const [pop, setPop] = useState<Pop>()
   const busy = useRef(false)
+  useTrack(game?.phase === 'end' ? 'aucune' : 'partie')
 
   useEffect(() => {
     loadCurrentGame().then((g) => setGame(g ?? null))
@@ -57,6 +59,7 @@ export function GameScreen() {
         words={game.discovery.map((id) => wordsById.get(id)).filter((w) => w !== undefined)}
         onDone={async () => {
           const next = startRounds(game)
+          play('manche')
           await saveCurrentGame(next)
           setGame(next)
         }}
@@ -100,8 +103,10 @@ export function GameScreen() {
     busy.current = true
     const effect = answerCard(game, result, { player, progress, scores: data!.settings.scores, today: toDay() })
     await recordCard(effect)
-    playSound(result, data!.settings.sound)
     const up = effect.progress && effect.progress.box > (progress?.box ?? 1)
+    play(result)
+    if (effect.progress?.box === 6 && up) setTimeout(() => play('acquis'), 350)
+    else if (up) setTimeout(() => play('monte'), 350)
     const points = effect.review?.points ?? 0
     setPop({
       text: result === 'rate' ? 'À revoir' : points > 0 ? `+${points}` : 'Bien joué',
@@ -112,7 +117,7 @@ export function GameScreen() {
       setPop(undefined)
       setRevealed(false)
       setGame(effect.game)
-      if (effect.game.phase === 'end') playSound('fin', data!.settings.sound)
+      if (effect.game.phase === 'play' && effect.game.roundIndex !== game.roundIndex) play('manche')
       busy.current = false
     }, 1100)
   }
@@ -183,7 +188,10 @@ export function GameScreen() {
           box={box}
           playerName={player.name}
           revealed={revealed}
-          onReveal={() => setRevealed(true)}
+          onReveal={() => {
+            if (!revealed) play('retourne')
+            setRevealed(true)
+          }}
           accent={player.color}
         />
         {pop && <PopOverlay pop={pop} />}

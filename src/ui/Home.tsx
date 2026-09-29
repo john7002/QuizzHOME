@@ -1,3 +1,4 @@
+import { useTrack } from './useTrack'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -8,7 +9,7 @@ import { MODES, MODES_BY_FAMILY, ROUND_FAMILIES, shuffle } from '../domain/modes
 import { dashboard, nextMilestone, streak } from '../domain/stats'
 import type { ModeId } from '../domain/types'
 import { Avatar, Loading, ROT, useData } from './common'
-import { IconBars, IconFlame, IconLock, IconPlay, IconPlus, IconSoundOff, IconSoundOn, IconStar, IconArrow, IconCheck, Trophy } from './icons'
+import { IconBars, IconFlame, IconLock, IconPlay, IconPlus, IconSoundOff, IconSoundOn, IconMusic, IconStar, IconArrow, IconCheck, Trophy } from './icons'
 import { useBackupStatus } from './useBackupStatus'
 
 const ROUND_COLORS = ['var(--cyan)', 'var(--gold)', 'var(--coral)']
@@ -34,6 +35,7 @@ export function Home() {
   const [modes, setModes] = useState<ModeId[]>()
   const [absent, setAbsent] = useState<Set<string>>(new Set())
   const today = toDay()
+  useTrack('menu')
 
   useEffect(() => {
     if (lastModes !== null && !modes) setModes(pickModes(lastModes))
@@ -125,7 +127,16 @@ export function Home() {
         )}
         <button
           className="btn btn-icon"
-          aria-label={data.settings.sound ? 'Couper le son' : 'Activer le son'}
+          aria-label={data.settings.music ? 'Couper la musique' : 'Activer la musique'}
+          aria-pressed={data.settings.music}
+          onClick={() => saveSettings({ music: !data.settings.music })}
+          style={{ color: data.settings.music ? 'var(--lime)' : 'var(--text-muted)' }}
+        >
+          <IconMusic off={!data.settings.music} />
+        </button>
+        <button
+          className="btn btn-icon"
+          aria-label={data.settings.sound ? 'Couper les effets sonores' : 'Activer les effets sonores'}
           aria-pressed={data.settings.sound}
           onClick={() => saveSettings({ sound: !data.settings.sound })}
           style={{ color: data.settings.sound ? 'var(--lime)' : 'var(--text-muted)' }}

@@ -1,5 +1,6 @@
 // Tableau de bord d'un joueur (maquette « Progrès »).
 
+import { useTrack } from '../useTrack'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { addDays, toDay } from '../../domain/days'
@@ -21,6 +22,7 @@ export function Progress() {
   const { id } = useParams()
   const data = useData()
   const [view, setView] = useState<'simple' | 'parents'>('simple')
+  useTrack('menu')
   if (!data) return <Loading />
   const player = data.players.find((p) => p.id === id)
   if (!player) {

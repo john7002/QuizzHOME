@@ -1,5 +1,6 @@
 // Ajout et modification d'une fiche mot (maquette « Ajouter un mot »).
 
+import { useTrack } from '../useTrack'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -9,6 +10,7 @@ import { splitSentence } from '../../domain/text'
 import type { Word, WordKind } from '../../domain/types'
 import { useData, useImageUrl } from '../common'
 import { PlayerPicker } from './PlayerPicker'
+import { play } from '../audio'
 import { IconCamera, IconCheck, IconChevron, IconClose, IconList, IconPlus } from '../icons'
 
 export const CATEGORIES = ['Lecture', 'École', 'Vie courante']
@@ -85,6 +87,7 @@ export function WordEditor() {
   const [error, setError] = useState<string>()
   const wordInput = useRef<HTMLInputElement>(null)
   const image = useImageUrl(form.imageId)
+  useTrack('aucune')
 
   useEffect(() => {
     if (existing && existing.id !== loadedId) {
@@ -154,6 +157,7 @@ export function WordEditor() {
       navigate(-1)
       return
     }
+    play('ajout')
     setSaved({ word: w.word, draft: w.status === 'brouillon' })
   }
 
