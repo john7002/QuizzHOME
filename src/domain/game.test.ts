@@ -156,3 +156,29 @@ describe('answerCard', () => {
     expect(game.outcomes).toHaveLength(3)
   })
 })
+
+describe('createGame avec peu de mots', () => {
+  it('fait jouer tout le monde, les autres joueurs après l’apprenant principal', () => {
+    const players = [player('leo', { isMainLearner: true }), player('ines'), player('papa', { ageGroup: 'adulte' })]
+    const words = [word('a'), word('b'), word('c')]
+    const game = createGame({ players, words, progress: [], today, maxCards: 15, maxNew: 4, modes: ['bon-sens', 'carte-classique', 'a-toi-la-phrase'], rng, newId })
+    const cards = game.rounds.flatMap((r) => r.cards)
+    for (const p of players) expect(cards.filter((c) => c.playerId === p.id).map((c) => c.wordId).sort()).toEqual(['a', 'b', 'c'])
+    expect(game.discovery).toHaveLength(3)
+    // Dans chaque manche, la carte de Léo sur un mot passe avant celles des autres joueurs.
+    for (const round of game.rounds) {
+      for (const c of round.cards.filter((c) => c.playerId !== 'leo')) {
+        const leo = round.cards.findIndex((x) => x.playerId === 'leo' && x.wordId === c.wordId)
+        expect(leo).toBeGreaterThanOrEqual(0)
+        expect(leo).toBeLessThan(round.cards.indexOf(c))
+      }
+    }
+  })
+
+  it('respecte le plafond de cartes', () => {
+    const players = [player('leo', { isMainLearner: true }), player('ines')]
+    const words = [word('a'), word('b'), word('c')]
+    const game = createGame({ players, words, progress: [], today, maxCards: 4, maxNew: 4, modes: ['bon-sens', 'carte-classique', 'a-toi-la-phrase'], rng, newId })
+    expect(cardCount(game)).toBe(4)
+  })
+})

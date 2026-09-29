@@ -5,6 +5,8 @@
 //   les mots de chaque joueur du plus facile (boîtes basses, mots nouveaux → reconnaissance) au plus
 //   exigeant (boîtes hautes → production) ;
 // - l'apprenant principal joue une carte sur deux, les autres joueurs se partagent les autres tours ;
+// - un mot n'est donné qu'à un joueur tant qu'il y en a assez ; sinon les autres le rejouent après
+//   l'apprenant principal, en fin de manche, chacun avec sa propre progression ;
 // - une carte ratée revient une fois en fin de manche, pour s'entraîner : ce second essai ne change
 //   ni la boîte ni les points.
 
@@ -106,35 +108,45 @@ export function createGame(setup: GameSetup): Game {
 
   // 1. Mots candidats de chaque joueur, dans l'ordre de priorité.
   //    L'apprenant principal choisit en premier ; les mots nouveaux déjà proposés à un joueur ne le
-  //    sont pas à un autre.
-  const queues = new Map<Id, { word: Word; isNew: boolean }[]>()
+  //    sont pas à un autre tant qu'il en reste. `fallback` = les mots qu'il pourrait partager.
+  type Pick = { word: Word; isNew: boolean; shared?: boolean }
+  const queues = new Map<Id, Pick[]>()
+  const fallback = new Map<Id, Pick[]>()
   const queued = new Set<Id>()
   for (const p of [...players].sort((a, b) => Number(b.isMainLearner) - Number(a.isMainLearner))) {
-    const { due } = selectWords(words, progress, p.id, today, { maxCards, maxNew })
+    const own = selectWords(words, progress, p.id, today, { maxCards, maxNew })
     const { fresh } = selectWords(
       words.filter((w) => !queued.has(w.id)),
       progress,
       p.id,
       today,
-      { maxCards, maxNew, newWordsThreshold: due.length < 15 ? Infinity : 0 },
+      { maxCards, maxNew, newWordsThreshold: own.due.length < 15 ? Infinity : 0 },
     )
-    queues.set(p.id, [...due.map((word) => ({ word, isNew: false })), ...fresh.map((word) => ({ word, isNew: true }))])
-    for (const w of [...due, ...fresh]) queued.add(w.id)
+    queues.set(p.id, [...own.due.map((word) => ({ word, isNew: false })), ...fresh.map((word) => ({ word, isNew: true }))])
+    fallback.set(p.id, own.fresh.filter((w) => !fresh.includes(w)).map((word) => ({ word, isNew: true, shared: true })))
+    for (const w of [...own.due, ...fresh]) queued.add(w.id)
   }
 
-  // 2. Mots de chaque joueur, en suivant l'ordre des tours. Un mot n'est donné qu'à un seul joueur
-  //    par partie : sinon le second verrait la réponse juste avant son tour.
+  // 2. Mots de chaque joueur, en suivant l'ordre des tours. On évite de donner un mot à deux joueurs
+  //    (le second verrait la réponse). S'il n'y a plus assez de mots, un joueur rejoue un mot déjà
+  //    donné à un autre : sa carte passe alors après celle de l'autre joueur (étape 4).
   const used = new Set<Id>()
-  const chosen = new Map(players.map((p) => [p.id, [] as { word: Word; isNew: boolean }[]]))
+  const chosen = new Map(players.map((p) => [p.id, [] as Pick[]]))
   let total = 0
   for (const id of turnOrder(players, maxCards * players.length)) {
     if (total >= maxCards) break
+    const mine = chosen.get(id)!
+    const has = (w: Word) => mine.some((c) => c.word.id === w.id)
     const queue = queues.get(id)!
-    while (queue.length && used.has(queue[0].word.id)) queue.shift()
-    const next = queue.shift()
+    let next = queue.find((c) => !used.has(c.word.id))
+    if (next) queue.splice(queue.indexOf(next), 1)
+    else {
+      next = [...queue, ...fallback.get(id)!].find((c) => used.has(c.word.id) && !has(c.word))
+      if (next) next = { ...next, shared: true }
+    }
     if (next) {
       used.add(next.word.id)
-      chosen.get(id)!.push(next)
+      mine.push(next)
       total++
     }
   }
@@ -142,7 +154,7 @@ export function createGame(setup: GameSetup): Game {
   // 3. Mots de chaque joueur triés du plus facile au plus exigeant, puis répartis dans les 3 manches.
   const parts = new Map(
     players.map((p) => {
-      const mine = chosen.get(p.id)!
+      const mine = chosen.get(p.id)!.filter((c) => !c.shared)
       mine.sort((a, b) => boxOf(p.id, a.word.id) - boxOf(p.id, b.word.id))
       return [p.id, splitInThree(mine)]
     }),
@@ -158,9 +170,22 @@ export function createGame(setup: GameSetup): Game {
       if (next) cards.push(makeCard(next.word, playerId, modes[r], next.isNew, words, rng, newId))
     }
     return { family, mode: modes[r], cards }
-  }).filter((r) => r.cards.length > 0)
+  })
 
-  const discovery = [...chosen.values()].flatMap((l) => l.filter((c) => c.isNew).map((c) => c.word.id)).filter((id) => wordById.has(id))
+  // 4. Mots partagés : dans la même manche que la carte d'origine, en fin de manche, pour que
+  //    l'apprenant principal ne voie jamais la réponse avant son tour.
+  const sharedTurns = turnOrder(players, maxCards * players.length)
+  const sharedLeft = new Map(players.map((p) => [p.id, chosen.get(p.id)!.filter((c) => c.shared)]))
+  for (const playerId of sharedTurns) {
+    const next = sharedLeft.get(playerId)!.shift()
+    if (!next) continue
+    const r = rounds.findIndex((round) => round.cards.some((c) => c.wordId === next.word.id))
+    const round = rounds[r === -1 ? rounds.length - 1 : r]
+    round.cards.push(makeCard(next.word, playerId, round.mode, next.isNew, words, rng, newId))
+  }
+  const playable = rounds.filter((r) => r.cards.length > 0)
+
+  const discovery = [...new Set([...chosen.values()].flatMap((l) => l.filter((c) => c.isNew).map((c) => c.word.id)))].filter((id) => wordById.has(id))
 
   return {
     id: newId(),
@@ -168,8 +193,8 @@ export function createGame(setup: GameSetup): Game {
     startedAt: Date.now(),
     playerIds: players.map((p) => p.id),
     discovery,
-    rounds,
-    phase: discovery.length > 0 ? 'discovery' : rounds.length > 0 ? 'play' : 'end',
+    rounds: playable,
+    phase: discovery.length > 0 ? 'discovery' : playable.length > 0 ? 'play' : 'end',
     roundIndex: 0,
     cardIndex: 0,
     outcomes: [],
