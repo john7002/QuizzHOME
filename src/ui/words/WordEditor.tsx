@@ -8,6 +8,7 @@ import { deleteWord, findDuplicates, saveWord, setSuspended, storeImage, type Wo
 import { splitSentence } from '../../domain/text'
 import type { Word, WordKind } from '../../domain/types'
 import { useData, useImageUrl } from '../common'
+import { PlayerPicker } from './PlayerPicker'
 import { IconCamera, IconCheck, IconChevron, IconClose, IconList, IconPlus } from '../icons'
 
 export const CATEGORIES = ['Lecture', 'École', 'Vie courante']
@@ -24,7 +25,7 @@ interface Form {
   sentence: string
   definition: string
   category: string
-  forPlayerId: string
+  forPlayerIds: string[]
   imageId?: string
   knownSense: string
   synonyms: string
@@ -41,7 +42,7 @@ const EMPTY: Form = {
   sentence: '',
   definition: '',
   category: 'Lecture',
-  forPlayerId: '',
+  forPlayerIds: [],
   knownSense: '',
   synonyms: '',
   antonyms: '',
@@ -58,7 +59,7 @@ function toForm(w: Word): Form {
     sentence: w.sentence,
     definition: w.definition,
     category: w.category,
-    forPlayerId: w.forPlayerId ?? '',
+    forPlayerIds: w.forPlayerIds ?? [],
     imageId: w.imageId,
     knownSense: w.knownSense ?? '',
     synonyms: (w.synonyms ?? []).join(', '),
@@ -137,7 +138,7 @@ export function WordEditor() {
       sentence: form.sentence,
       definition: form.definition,
       category: form.category,
-      forPlayerId: form.forPlayerId || undefined,
+      forPlayerIds: form.forPlayerIds.length ? form.forPlayerIds : undefined,
       imageId: form.imageId,
       knownSense: form.knownSense.trim() || undefined,
       synonyms: list(form.synonyms),
@@ -157,7 +158,7 @@ export function WordEditor() {
   }
 
   function again() {
-    setForm({ ...EMPTY, category: form.category, forPlayerId: form.forPlayerId })
+    setForm({ ...EMPTY, category: form.category, forPlayerIds: form.forPlayerIds })
     setSaved(undefined)
     setMore(false)
     setNewSense(false)
@@ -266,19 +267,7 @@ export function WordEditor() {
               </div>
             </div>
             {data && data.players.length > 1 && (
-              <div className="field">
-                <span className="label">Pour qui ?</span>
-                <div className="row wrap" style={{ gap: 6 }}>
-                  <button className="chip-btn" aria-pressed={!form.forPlayerId} onClick={() => set('forPlayerId', '')}>
-                    Famille
-                  </button>
-                  {data.players.map((p) => (
-                    <button key={p.id} className="chip-btn" aria-pressed={form.forPlayerId === p.id} onClick={() => set('forPlayerId', p.id)}>
-                      {p.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <PlayerPicker players={data.players} value={form.forPlayerIds} onChange={(v) => set('forPlayerIds', v)} />
             )}
           </div>
 

@@ -21,6 +21,18 @@ export class QuizzDb extends Dexie {
       images: 'id',
       meta: 'key',
     })
+    // v2 : « Pour qui ? » accepte plusieurs joueurs (forPlayerId → forPlayerIds).
+    this.version(2)
+      .stores({ words: 'id, status, category, kind, *forPlayerIds, word' })
+      .upgrade((tx) => tx.table('words').toCollection().modify(migrateWord))
+  }
+}
+
+/** Convertit une fiche d'un ancien format (sauvegarde ou base v1). */
+export function migrateWord(w: Record<string, unknown>): void {
+  if ('forPlayerId' in w) {
+    if (w.forPlayerId) w.forPlayerIds = [w.forPlayerId]
+    delete w.forPlayerId
   }
 }
 

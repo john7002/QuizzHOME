@@ -2,7 +2,7 @@
 // Format : un .zip contenant data.json (toutes les tables sauf les images) et images/<id>.
 
 import JSZip from 'jszip'
-import { db, getMeta, setMeta, type QuizzDb } from './db'
+import { db, getMeta, migrateWord, setMeta, type QuizzDb } from './db'
 import { toDay } from '../domain/days'
 
 export const BACKUP_FORMAT = 1
@@ -59,6 +59,7 @@ export async function importBackup(file: Blob, database: QuizzDb = db): Promise<
   const tables = [database.words, database.players, database.progress, database.reviews, database.images, database.meta]
   await database.transaction('rw', tables, async () => {
     await Promise.all(tables.map((t) => t.clear()))
+    data.words.forEach((w) => migrateWord(w as Record<string, unknown>))
     await database.words.bulkAdd(data.words as never[])
     await database.players.bulkAdd(data.players as never[])
     await database.progress.bulkAdd(data.progress as never[])

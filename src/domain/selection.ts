@@ -22,7 +22,7 @@ export function isPlayable(w: Word, playerId: Id): boolean {
     w.status === 'actif' &&
     w.definition.trim() !== '' &&
     w.sentence.trim() !== '' &&
-    (w.forPlayerId === undefined || w.forPlayerId === playerId)
+    (!w.forPlayerIds?.length || w.forPlayerIds.includes(playerId))
   )
 }
 

@@ -43,3 +43,44 @@ describe('sauvegarde', () => {
     expect(backupIsDue(now - 8 * 86_400_000, now)).toBe(true)
   })
 })
+
+describe('ancien format « pour qui ? » (un seul joueur)', () => {
+  it('convertit forPlayerId en forPlayerIds à l’import d’une ancienne sauvegarde', async () => {
+    const JSZip = (await import('jszip')).default
+    const zip = new JSZip()
+    zip.file(
+      'data.json',
+      JSON.stringify({
+        format: 1,
+        exportedAt: '',
+        words: [
+          { id: 'a', kind: 'mot', word: 'a', sentence: 'a', definition: 'a', category: 'Lecture', status: 'actif', forPlayerId: 'leo', createdAt: 0, updatedAt: 0 },
+          { id: 'b', kind: 'mot', word: 'b', sentence: 'b', definition: 'b', category: 'Lecture', status: 'actif', createdAt: 0, updatedAt: 0 },
+        ],
+        players: [],
+        progress: [],
+        reviews: [],
+        meta: [],
+        images: [],
+      }),
+    )
+    const target = new QuizzDb('ancien-format')
+    await importBackup(await zip.generateAsync({ type: 'blob' }), target)
+    const a = await target.words.get('a')
+    expect(a?.forPlayerIds).toEqual(['leo'])
+    expect(a).not.toHaveProperty('forPlayerId')
+    expect((await target.words.get('b'))?.forPlayerIds).toBeUndefined()
+  })
+
+  it('migre une base existante créée avec la version 1', async () => {
+    const { default: Dexie } = await import('dexie')
+    const old = new Dexie('base-v1')
+    old.version(1).stores({ words: 'id, status, category, kind, forPlayerId, word', players: 'id', progress: '[playerId+wordId], playerId, wordId, dueDay, box', reviews: 'id, gameId, playerId, wordId, day', images: 'id', meta: 'key' })
+    await old.table('words').add({ id: 'x', kind: 'mot', word: 'x', sentence: 'x', definition: 'x', category: 'Lecture', status: 'actif', forPlayerId: 'ines', createdAt: 0, updatedAt: 0 })
+    old.close()
+
+    const db2 = new QuizzDb('base-v1')
+    expect((await db2.words.get('x'))?.forPlayerIds).toEqual(['ines'])
+    expect(await db2.words.where('forPlayerIds').equals('ines').count()).toBe(1)
+  })
+})

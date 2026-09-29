@@ -36,7 +36,13 @@ export async function savePlayer(player: Omit<Player, 'id' | 'createdAt'> & { id
 }
 
 export async function deletePlayer(id: string): Promise<void> {
-  await db.transaction('rw', [db.players, db.progress, db.reviews], async () => {
+  await db.transaction('rw', [db.players, db.progress, db.reviews, db.words], async () => {
+    await db.words
+      .where('forPlayerIds')
+      .equals(id)
+      .modify((w) => {
+        w.forPlayerIds = w.forPlayerIds!.filter((p) => p !== id)
+      })
     await db.players.delete(id)
     await db.progress.where('playerId').equals(id).delete()
     await db.reviews.where('playerId').equals(id).delete()
@@ -107,7 +113,7 @@ export function parseBatch(text: string): { word: string; sentence: string; defi
 
 export async function addBatch(
   lines: { word: string; sentence: string; definition: string }[],
-  common: Pick<Word, 'category'> & { forPlayerId?: string },
+  common: Pick<Word, 'category' | 'forPlayerIds'>,
 ): Promise<number> {
   for (const l of lines) {
     await saveWord({ ...l, kind: l.word.trim().includes(' ') ? 'expression' : 'mot', ...common })

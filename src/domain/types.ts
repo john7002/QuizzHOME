@@ -31,8 +31,8 @@ export interface Word {
   mimable?: boolean
   /** Phrase absurde pour « Vrai ou faux ». */
   absurdSentence?: string
-  /** Absent = pour toute la famille. */
-  forPlayerId?: Id
+  /** Joueurs à qui le mot est destiné ; absent ou vide = pour toute la famille. */
+  forPlayerIds?: Id[]
   /** Paquet de départ d'où vient le mot, s'il y a lieu. */
   packId?: string
   createdAt: number

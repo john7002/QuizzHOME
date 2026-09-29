@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { addBatch, parseBatch } from '../../data/repo'
 import { BackLink, useData } from '../common'
+import { PlayerPicker } from './PlayerPicker'
 import { IconCheck } from '../icons'
 import { CATEGORIES } from './WordEditor'
 
@@ -12,13 +13,13 @@ export function BatchAdd() {
   const navigate = useNavigate()
   const [text, setText] = useState('')
   const [category, setCategory] = useState('École')
-  const [forPlayerId, setForPlayerId] = useState('')
+  const [forPlayerIds, setForPlayerIds] = useState<string[]>([])
   const [done, setDone] = useState<number>()
   const lines = parseBatch(text)
   const complete = lines.filter((l) => l.sentence && l.definition).length
 
   async function save() {
-    const n = await addBatch(lines, { category, forPlayerId: forPlayerId || undefined })
+    const n = await addBatch(lines, { category, forPlayerIds: forPlayerIds.length ? forPlayerIds : undefined })
     setDone(n)
     setText('')
   }
@@ -61,21 +62,7 @@ export function BatchAdd() {
                 ))}
               </div>
             </div>
-            {data && data.players.length > 1 && (
-              <div className="field">
-                <span className="label">Pour qui ?</span>
-                <div className="row wrap" style={{ gap: 6 }}>
-                  <button className="chip-btn" aria-pressed={!forPlayerId} onClick={() => setForPlayerId('')}>
-                    Famille
-                  </button>
-                  {data.players.map((p) => (
-                    <button key={p.id} className="chip-btn" aria-pressed={forPlayerId === p.id} onClick={() => setForPlayerId(p.id)}>
-                      {p.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            {data && data.players.length > 1 && <PlayerPicker players={data.players} value={forPlayerIds} onChange={setForPlayerIds} />}
           </div>
         </section>
 

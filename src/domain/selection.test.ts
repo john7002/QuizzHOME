@@ -40,11 +40,19 @@ describe('selectWords', () => {
       word('futur'),
       word('brouillon', { definition: '' }),
       word('pause', { status: 'suspendu' }),
-      word('ines', { forPlayerId: 'ines' }),
+      word('ines', { forPlayerIds: ['ines', 'papa'] }),
     ]
     const { due, fresh } = selectWords(words, [prog('futur', '2026-10-05')], 'leo', today)
     expect(due).toEqual([])
     expect(fresh).toEqual([])
+  })
+
+  it('propose un mot à chacun des joueurs choisis, et à eux seuls', () => {
+    const words = [word('perso', { forPlayerIds: ['leo', 'ines'] }), word('famille', { forPlayerIds: [] })]
+    const ids = (p: string) => selectWords(words, [], p, today).fresh.map((w) => w.id)
+    expect(ids('leo')).toEqual(['perso', 'famille'])
+    expect(ids('ines')).toEqual(['perso', 'famille'])
+    expect(ids('papa')).toEqual(['famille'])
   })
 
   it('ajoute au plus 4 mots nouveaux, seulement si moins de 15 mots sont dus', () => {
