@@ -1,0 +1,130 @@
+/* Direction « Arcade néon » (maquettes tablette). */
+@import '@fontsource/unbounded/500.css';
+@import '@fontsource/unbounded/700.css';
+@import '@fontsource/unbounded/800.css';
+@import '@fontsource/figtree/400.css';
+@import '@fontsource/figtree/600.css';
+@import '@fontsource/figtree/700.css';
+
+:root {
+  --ink: #120f2a;
+  --surface: #1e1a40;
+  --surface-2: #2a2555;
+  --line: #3a3470;
+  --text: #f7f4ff;
+  --text-muted: #b9b3dc;
+  --lime: #c8f55a;
+  --lime-deep: #7fa82a;
+  --gold: #ffc53d;
+  --coral: #ff7a59;
+  --cyan: #5ad8ff;
+  --violet: #9b7bff;
+  --card: #fbf8ff;
+
+  --font-display: 'Unbounded', 'Arial Black', sans-serif;
+  --font-body: 'Figtree', system-ui, sans-serif;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--ink);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1.5px, transparent 1.6px);
+  background-size: 28px 28px;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.disp {
+  font-family: var(--font-display);
+}
+
+.screen {
+  min-height: 100%;
+  padding: max(28px, env(safe-area-inset-top)) max(40px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom))
+    max(40px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.panel {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 32px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.btn {
+  min-height: 60px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 20px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--lime);
+  color: var(--ink);
+  box-shadow: 0 7px 0 var(--lime-deep);
+}
+
+.btn:active {
+  transform: translateY(4px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.banner {
+  border-radius: 20px;
+  padding: 14px 20px;
+  background: var(--surface-2);
+  border: 2px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 17px;
+  font-weight: 600;
+}
