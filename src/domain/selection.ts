@@ -21,6 +21,7 @@ export function isPlayable(w: Word, playerId: Id): boolean {
   return (
     w.status === 'actif' &&
     w.definition.trim() !== '' &&
+    w.sentence.trim() !== '' &&
     (w.forPlayerId === undefined || w.forPlayerId === playerId)
   )
 }

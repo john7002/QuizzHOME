@@ -33,6 +33,8 @@ export interface Word {
   absurdSentence?: string
   /** Absent = pour toute la famille. */
   forPlayerId?: Id
+  /** Paquet de départ d'où vient le mot, s'il y a lieu. */
+  packId?: string
   createdAt: number
   updatedAt: number
 }
@@ -93,3 +95,12 @@ export interface MetaEntry {
   key: string
   value: unknown
 }
+
+export type ModeId =
+  | 'bon-sens'
+  | 'vrai-faux'
+  | 'carte-classique'
+  | 'mot-cache'
+  | 'quel-sens'
+  | 'a-toi-la-phrase'
+  | 'fais-deviner'

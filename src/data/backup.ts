@@ -73,26 +73,32 @@ export function backupFileName(date = new Date()): string {
 }
 
 /**
- * Propose le fichier via le menu de partage (iPad : « Enregistrer dans Fichiers » → iCloud Drive),
+ * Propose le fichier via le menu de partage (iPad : « Enregistrer dans Fichiers » → « Sur mon iPad » ou iCloud Drive),
  * sinon le télécharge (ordinateur).
  */
 export async function saveBackup(): Promise<void> {
   const blob = await exportBackup()
   const file = new File([blob], backupFileName(), { type: 'application/zip' })
-  if (navigator.canShare?.({ files: [file] })) {
+  // Menu de partage sur tablette et téléphone ; simple téléchargement sur ordinateur.
+  const touch = navigator.maxTouchPoints > 1
+  if (touch && navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: 'Sauvegarde QUIZZHOME' })
     } catch (e) {
       if ((e as DOMException).name === 'AbortError') return
-      throw e
+      download(file)
     }
   } else {
-    const url = URL.createObjectURL(file)
-    const a = Object.assign(document.createElement('a'), { href: url, download: file.name })
-    a.click()
-    URL.revokeObjectURL(url)
+    download(file)
   }
   await setMeta(LAST_BACKUP_KEY, Date.now())
+}
+
+function download(file: File) {
+  const url = URL.createObjectURL(file)
+  const a = Object.assign(document.createElement('a'), { href: url, download: file.name })
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 export async function lastBackupAt(): Promise<number | undefined> {

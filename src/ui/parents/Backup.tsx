@@ -1,11 +1,10 @@
 import { useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { importBackup, saveBackup } from '../data/backup'
-import { useBackupStatus } from './useBackupStatus'
+import { importBackup, saveBackup } from '../../data/backup'
+import { useBackupStatus } from '../useBackupStatus'
 
 const dateFormat = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' })
 
-export function Parents() {
+export function Backup() {
   const backup = useBackupStatus()
   const fileInput = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
@@ -34,22 +33,10 @@ export function Parents() {
   }
 
   return (
-    <main className="screen">
-      <header style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <Link to="/" className="btn">
-          ← Accueil
-        </Link>
-        <h1 className="disp" style={{ margin: 0, fontSize: 32, fontWeight: 800 }}>
-          Espace parents
-        </h1>
-      </header>
-
-      <section className="panel">
-        <h2 className="disp" style={{ margin: 0, fontSize: 22 }}>
-          Sauvegarde
-        </h2>
+    <section className="panel" style={{ maxWidth: 820 }}>
+      <h2>Sauvegarde</h2>
         <p className="muted" style={{ margin: 0, fontSize: 18 }}>
-          Toutes les données restent sur cet appareil. Enregistre régulièrement une sauvegarde dans Fichiers → iCloud Drive :
+          Toutes les données restent sur cet appareil. Enregistre régulièrement une sauvegarde dans l’app Fichiers (par exemple « Sur mon iPad ») :
           elle sert aussi à reprendre la partie sur un autre appareil.
         </p>
         <p style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
@@ -79,7 +66,6 @@ export function Parents() {
             {message}
           </p>
         )}
-      </section>
-    </main>
+    </section>
   )
 }
